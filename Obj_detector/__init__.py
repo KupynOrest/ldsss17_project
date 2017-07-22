@@ -14,6 +14,6 @@ if __name__ == '__main__':
             path_to_save = os.path.join(directory_to_save, category, frame)
             if not os.path.exists(path_to_save):
                 os.makedirs(path_to_save)
-            detector = Obj_detector(path_to_save)
-            detector.fit_transform(os.listdir(path_to_save))
+            detector = Obj_detector(path_to_save, os.path.join(directory_of_images, category, frame))
+            detector.fit_transform(os.listdir(os.path.join(directory_of_images, category, frame)))
 

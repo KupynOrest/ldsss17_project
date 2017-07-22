@@ -7,7 +7,7 @@ from object_detection.utils import label_map_util
 
 
 class Obj_detector(object):
-    def __init__(self, path_to_save, model_name=None, path_to_labels=None):
+    def __init__(self, path_to_save, path_of_images, model_name=None, path_to_labels=None):
         self.path_to_save = path_to_save
         if model_name is None:
             self.model_name = 'ssd_mobilenet_v1_coco_11_06_2017'
@@ -18,31 +18,34 @@ class Obj_detector(object):
         else:
             self.path_to_labels = path_to_labels
         self.path_to_scpt = os.path.join(os.getcwd(), '..', 'object_detection/' + self.model_name + '/frozen_inference_graph.pb')
+        self.path_of_images = path_of_images
 
     def fit_transform(self, list_of_paths, num_classes=90, save=True):
         detection_graph = self._make_comp_graph()
         # label_map, categories, category_index = self._make_label(num_classes)
         with detection_graph.as_default():
-            with tf.Session(graph=detection_graph) as sess:
-                for image_path in list_of_paths:
-                    image = Image.open(image_path)
+            with tf.device('/gpu:0'):
+                with tf.Session(graph=detection_graph) as sess:
+                    print(list_of_paths)
+                    for image_path in list_of_paths:
+                        image = Image.open(os.path.join(self.path_of_images, image_path))
 
-                    image_np = self._load_image_into_numpy_array(image)
+                        image_np = self._load_image_into_numpy_array(image)
 
-                    image_np_expanded = np.expand_dims(image_np, axis=0)
-                    image_tensor = detection_graph.get_tensor_by_name('image_tensor:0')
+                        image_np_expanded = np.expand_dims(image_np, axis=0)
+                        image_tensor = detection_graph.get_tensor_by_name('image_tensor:0')
 
-                    boxes = detection_graph.get_tensor_by_name('detection_boxes:0')
-                    scores = detection_graph.get_tensor_by_name('detection_scores:0')
+                        boxes = detection_graph.get_tensor_by_name('detection_boxes:0')
+                        scores = detection_graph.get_tensor_by_name('detection_scores:0')
 
-                    classes = detection_graph.get_tensor_by_name('detection_classes:0')
-                    num_detections = detection_graph.get_tensor_by_name('num_detections:0')
-                    (boxes_res, scores_res, classes_res, num_detections_res) = sess.run(
-                        [boxes, scores, classes, num_detections],
-                        feed_dict={image_tensor: image_np_expanded})
-                    image_name = image_path.split('/')[-1]
-                    if save:
-                        self._save(image_name, boxes_res, scores_res, classes_res, num_detections_res)
+                        classes = detection_graph.get_tensor_by_name('detection_classes:0')
+                        num_detections = detection_graph.get_tensor_by_name('num_detections:0')
+                        (boxes_res, scores_res, classes_res, num_detections_res) = sess.run(
+                            [boxes, scores, classes, num_detections],
+                            feed_dict={image_tensor: image_np_expanded})
+                        image_name = image_path.split('/')[-1].split('.')[0]
+                        if save:
+                            self._save(image_name, boxes_res, scores_res, classes_res, num_detections_res)
         return None
 
     def _make_comp_graph(self):
@@ -75,5 +78,6 @@ class Obj_detector(object):
         a['scores'] = scores
         a['classes'] = classes
         a['num_detections'] = num_detections
-        with open(os.path.join(self.path_to_save, image_name + '.pickle', 'wb')) as f:
+        with open(os.path.join(self.path_to_save, image_name + '.pickle'), 'wb') as f:
+            print(os.path.join(self.path_to_save, image_name + '.pickle'))
             pickle.dump(a, f, protocol=pickle.HIGHEST_PROTOCOL)
