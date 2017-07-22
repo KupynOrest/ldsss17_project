@@ -24,27 +24,28 @@ class Obj_detector(object):
         detection_graph = self._make_comp_graph()
         # label_map, categories, category_index = self._make_label(num_classes)
         with detection_graph.as_default():
-            with tf.Session(graph=detection_graph) as sess:
-                print(list_of_paths)
-                for image_path in list_of_paths:
-                    image = Image.open(os.path.join(self.path_of_images, image_path))
+            with tf.device('/gpu:0'):
+                with tf.Session(graph=detection_graph) as sess:
+                    print(list_of_paths)
+                    for image_path in list_of_paths:
+                        image = Image.open(os.path.join(self.path_of_images, image_path))
 
-                    image_np = self._load_image_into_numpy_array(image)
+                        image_np = self._load_image_into_numpy_array(image)
 
-                    image_np_expanded = np.expand_dims(image_np, axis=0)
-                    image_tensor = detection_graph.get_tensor_by_name('image_tensor:0')
+                        image_np_expanded = np.expand_dims(image_np, axis=0)
+                        image_tensor = detection_graph.get_tensor_by_name('image_tensor:0')
 
-                    boxes = detection_graph.get_tensor_by_name('detection_boxes:0')
-                    scores = detection_graph.get_tensor_by_name('detection_scores:0')
+                        boxes = detection_graph.get_tensor_by_name('detection_boxes:0')
+                        scores = detection_graph.get_tensor_by_name('detection_scores:0')
 
-                    classes = detection_graph.get_tensor_by_name('detection_classes:0')
-                    num_detections = detection_graph.get_tensor_by_name('num_detections:0')
-                    (boxes_res, scores_res, classes_res, num_detections_res) = sess.run(
-                        [boxes, scores, classes, num_detections],
-                        feed_dict={image_tensor: image_np_expanded})
-                    image_name = image_path.split('/')[-1].split('.')[0]
-                    if save:
-                        self._save(image_name, boxes_res, scores_res, classes_res, num_detections_res)
+                        classes = detection_graph.get_tensor_by_name('detection_classes:0')
+                        num_detections = detection_graph.get_tensor_by_name('num_detections:0')
+                        (boxes_res, scores_res, classes_res, num_detections_res) = sess.run(
+                            [boxes, scores, classes, num_detections],
+                            feed_dict={image_tensor: image_np_expanded})
+                        image_name = image_path.split('/')[-1].split('.')[0]
+                        if save:
+                            self._save(image_name, boxes_res, scores_res, classes_res, num_detections_res)
         return None
 
     def _make_comp_graph(self):
