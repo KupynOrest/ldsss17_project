@@ -29,7 +29,7 @@ data_transforms = {
 
 data_dir = 'data_subset'
 dsets = {x: datasets.ImageFolder(os.path.join(data_dir, x), data_transforms[x]) for x in ['images']}
-dset_loaders = {x: torch.utils.data.DataLoader(dsets[x], batch_size=8, shuffle=True, num_workers=4)
+dset_loaders = {x: torch.utils.data.DataLoader(dsets[x], batch_size=4, shuffle=True, num_workers=8)
                 for x in ['images']}
 dset_sizes = {x: len(dsets[x]) for x in ['images']}
 dset_classes = dsets['images'].classes
@@ -173,7 +173,8 @@ def visualize_model(model, num_images=6):
 
 model_ft = models.resnet18(pretrained=True)
 num_ftrs = model_ft.fc.in_features
-model_ft.fc = nn.Linear(num_ftrs, 2)
+num_classes = 3
+model_ft.fc = nn.Linear(num_ftrs, num_classes)
 
 if use_gpu:
     model_ft = model_ft.cuda()
@@ -184,5 +185,5 @@ criterion = nn.CrossEntropyLoss()
 optimizer_ft = optim.SGD(model_ft.parameters(), lr=0.001, momentum=0.9)
 
 # Train and evaluate ^^^^^^^^^^^^^^^^^^
-model_ft = train_model(model_ft, criterion, optimizer_ft, exp_lr_scheduler, num_epochs=25)
+model_ft = train_model(model_ft, criterion, optimizer_ft, exp_lr_scheduler, num_epochs=2)
 
