@@ -5,6 +5,8 @@ from Obj_detector import Obj_detector
 
 
 if __name__ == '__main__':
+    os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
+    os.environ["CUDA_VISIBLE_DEVICES"] = "0"
     directory_to_save = os.path.join(os.getcwd(), '..' ,'data', 'object_detections')
     if not os.path.exists(directory_to_save):
         os.makedirs(directory_to_save)
