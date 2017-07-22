@@ -185,3 +185,4 @@ optimizer_ft = optim.SGD(model_ft.parameters(), lr=0.001, momentum=0.9)
 
 # Train and evaluate ^^^^^^^^^^^^^^^^^^
 model_ft = train_model(model_ft, criterion, optimizer_ft, exp_lr_scheduler, num_epochs=25)
+
