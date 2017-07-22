@@ -53,33 +53,31 @@ def prepare_model():
     return model
 
 
-
-def get_features():
+def get_features(in_dir, out_dir):
     model = prepare_model()
 
-    for filename in get_movies('../data_subset/videos'):
+    for filename in get_movies(in_dir):
         logger.info('Loading file %s', filename)
 
-        category = os.path.dirname(filename)
-        matrix = []
+        category = os.path.basename(os.path.dirname(filename))
+        frames = []
         for frame in get_frames(filename):
             if frame is None:
-                continue
-            img = Image.fromarray(frame)
-            inputs = data_transforms(img)
-            outputs = model(Variable(inputs.resize_(1, 3, 224, 224)))
-            #print(outputs.data.view(512).numpy())
-            matrix.append(outputs.data.view(512).numpy())
+                break
 
-        if not matrix:
+            img = Image.fromarray(frame)
+            frames.append(data_transforms(img).unsqueeze(0))
+
+        if not frames:
             continue
 
-        arr = np.ndarray(matrix)
-        logger.info('For file %s processed features %s', filename, arr.size)
+        features = model(Variable(torch.cat(frames))).data
 
-        path = 'data_features/{}'.format(category)
-        os.makedirs(path)
-        np.save('{}/{}.npy'.format(path, os.path.basename(filename)), arr)
+        logger.info('For file %s processed features %s', filename, features.size())
+
+        path = '{}/{}'.format(out_dir, category)
+        os.makedirs(path, exist_ok=True)
+        np.save('{}/{}.npy'.format(path, os.path.basename(filename)), features.numpy())
 
 if __name__ == '__main__':
-    get_features()
+    get_features('../data_subset/videos', '../data_features')
