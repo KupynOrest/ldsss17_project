@@ -2,7 +2,7 @@ import os
 import numpy
 from extractor import get_class_features
 
-frames_median = 157
+frames_median = 120
 
 for directory in ['../data/train', '../data/test']:
     classes = sorted(os.listdir(directory))[1:]
