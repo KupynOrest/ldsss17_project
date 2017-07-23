@@ -76,7 +76,6 @@ def prepare_model():
 def variable(t: torch.FloatTensor):
     if torch.cuda.is_available():
         return Variable(t.cuda())
-
     return Variable(t)
 
 
