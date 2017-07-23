@@ -4,7 +4,7 @@ from extractor import get_class_features
 
 frames_median = 180
 
-for directory in ['../data/train', '../data/test']:
+for directory in ['../data/test']:
     classes = sorted(os.listdir(directory))[1:]
     for class_name in classes:
         in_dir = os.path.join(directory, class_name)
