@@ -126,7 +126,7 @@ def get_features(in_dir, batch_size, max_frames=1000):
 
         yield labels, torch.cat(output)
 
-def get_class_features(in_dir, frames_median=157):
+def get_class_features(in_dir, frames_median=120, frames_divider = 6):
     model = prepare_model()
     movies = get_class_movies(in_dir)
 
@@ -137,10 +137,9 @@ def get_class_features(in_dir, frames_median=157):
         logger.info('Loading movie with category %s name %s and %d frames', label, title, len(frames))
 
         inputs = []
-        frames_divider = 4
-        frames_6fps = [frames[i] for i in range(len(frames)) if i % frames_divider == 0]
+        frames_sfps = [frames[i] for i in range(len(frames)) if i % frames_divider == 0]
         frames_limit = frames_median // frames_divider
-        frames = select_center(frames_6fps, frames_limit)
+        frames = select_center(frames_sfps, frames_limit)
 
         for frame in frames:
             img = Image.open(frame)
