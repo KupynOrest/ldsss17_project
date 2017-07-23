@@ -4,11 +4,12 @@ import os
 import logging
 import itertools
 import random
-
-import torch.nn
-import torchvision
 import numpy as np
 
+
+import torch
+import torch.nn
+import torchvision
 from torchvision import transforms
 from torch.autograd import Variable
 
@@ -74,8 +75,12 @@ def get_features(in_dir, batch_size):
     movies = iter(get_movies(in_dir))
 
     while True:
-        batch = itertools.islice(movies, 0, batch_size)
+        batch = list(itertools.islice(movies, 0, batch_size))
+        if not batch:
+            return
+
         output = []
+        labels = []
         for label, frames in batch:
             logger.info('Loading movie with category %s and %d frames', label, len(frames))
 
@@ -94,10 +99,12 @@ def get_features(in_dir, batch_size):
                 features = torch.cat([torch.zeros(frames_median - len(frames), 512), features])
 
             output.append(features.unsqueeze(0))
+            labels.append(label)
 
-        return torch.cat(output)
+        yield labels, torch.cat(output)
 
 
 if __name__ == '__main__':
-    res = get_features('../data_subset', batch_size=5)
-    print(res.size())
+    it = get_features('../data_subset', batch_size=5)
+    labels, res = next(it)
+    print(labels, res.size())
