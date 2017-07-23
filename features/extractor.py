@@ -88,9 +88,9 @@ def zeros(rows):
     return t
 
 
-def get_features(in_dir, batch_size):
+def get_features(in_dir, batch_size, max_frames=1000):
     model = prepare_model()
-    frames_median = int(get_frames_median(in_dir))
+    frames_median = min(int(get_frames_median(in_dir)), max_frames)
     movies = iter(get_movies(in_dir))
 
     while True:
