@@ -66,6 +66,7 @@ def select_center(frames, median):
 def prepare_model():
     model = torchvision.models.resnet18(pretrained=True)
     model.fc = DummyLayer()
+    model.train(False)
     if torch.cuda.is_available():
         return model.cuda()
 
@@ -77,6 +78,14 @@ def variable(t: torch.FloatTensor):
         return Variable(t.cuda())
 
     return Variable(t)
+
+
+def zeros(rows):
+    t = torch.zeros(rows, 512)
+    if torch.cuda.is_available():
+        return t.cuda()
+
+    return t
 
 
 def get_features(in_dir, batch_size):
@@ -106,7 +115,7 @@ def get_features(in_dir, batch_size):
 
             # left padding with zeros
             if len(frames) < frames_median:
-                features = torch.cat([torch.zeros(frames_median - len(frames), 512), features])
+                features = torch.cat([zeros(frames_median - len(frames)), features])
 
             output.append(features.unsqueeze(0))
             labels.append(label)
