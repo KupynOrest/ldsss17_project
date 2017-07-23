@@ -126,9 +126,8 @@ def get_features(in_dir, batch_size, max_frames=1000):
 
         yield labels, torch.cat(output)
 
-def get_class_features(in_dir):
+def get_class_features(in_dir, frames_median=157):
     model = prepare_model()
-    frames_median = 180
     movies = get_class_movies(in_dir)
 
     for label, frames in movies:
