@@ -1,6 +1,6 @@
 import os
 import numpy
-from features.extractor import get_class_features
+from extractor import get_class_features
 
 sequence_length = 157
 
