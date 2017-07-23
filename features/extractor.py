@@ -1,8 +1,10 @@
-import cv2
 import glob
 import os.path
 import os
 import logging
+import itertools
+import random
+
 import torch.nn
 import torchvision
 import numpy as np
@@ -19,8 +21,7 @@ logger.addHandler(logging.StreamHandler())
 
 
 data_transforms = transforms.Compose([
-    transforms.RandomSizedCrop(224),
-    transforms.RandomHorizontalFlip(),
+    transforms.Scale(224),
     transforms.ToTensor(),
     transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
 ])
@@ -31,20 +32,34 @@ class DummyLayer(torch.nn.Module):
         return input_
 
 
-def get_movies(path='data_subset/videos'):
-    for filename in glob.iglob(path + '/**', recursive=True):
-        yield filename
+def get_label(title):
+    return os.path.basename(os.path.dirname(title))
 
 
-def get_frames(filename):
-    v = cv2.VideoCapture(filename)
-    if not v.isOpened():
-        logger.warning('Unable to find file %s', filename)
-        return
+def get_title(filename):
+    return os.path.dirname(filename)
 
-    while v.isOpened():
-        _, frame = v.read()
-        yield frame
+
+def get_movies(path='data_subset', sub_dir='images', shuffle=True):
+    movies = glob.glob(path + '/' + sub_dir + '/**', recursive=True)
+    movies = [m for m in movies if m.endswith('.jpg')]
+    movies = [(get_label(title), list(frames)) for title, frames in itertools.groupby(movies, get_title)]
+    if shuffle:
+        random.shuffle(movies)
+
+    return movies
+
+
+def get_frames_median(path, sub_dir='images'):
+    return np.median([len(frames) for _, frames in get_movies(path=path, sub_dir=sub_dir, shuffle=False)])
+
+
+def select_center(frames, median):
+    if median >= len(frames):
+        return frames
+
+    padding = int((len(frames) - median) // 2)
+    return frames[padding:padding + median]
 
 
 def prepare_model():
@@ -53,31 +68,36 @@ def prepare_model():
     return model
 
 
-def get_features(in_dir, out_dir):
+def get_features(in_dir, batch_size):
     model = prepare_model()
+    frames_median = int(get_frames_median(in_dir))
+    movies = iter(get_movies(in_dir))
 
-    for filename in get_movies(in_dir):
-        logger.info('Loading file %s', filename)
+    while True:
+        batch = itertools.islice(movies, 0, batch_size)
+        output = []
+        for label, frames in batch:
+            logger.info('Loading movie with category %s and %d frames', label, len(frames))
 
-        category = os.path.basename(os.path.dirname(filename))
-        frames = []
-        for frame in get_frames(filename):
-            if frame is None:
-                break
+            inputs = []
+            for frame in select_center(frames, frames_median):
+                img = Image.open(frame)
+                inputs.append(data_transforms(img).unsqueeze(0))
 
-            img = Image.fromarray(frame)
-            frames.append(data_transforms(img).unsqueeze(0))
+            if not inputs:
+                continue
 
-        if not frames:
-            continue
+            features = model(Variable(torch.cat(inputs))).data
 
-        features = model(Variable(torch.cat(frames))).data
+            # left padding with zeros
+            if len(frames) < frames_median:
+                features = torch.cat([torch.zeros(frames_median - len(frames), 512), features])
 
-        logger.info('For file %s processed features %s', filename, features.size())
+            output.append(features.unsqueeze(0))
 
-        path = '{}/{}'.format(out_dir, category)
-        os.makedirs(path, exist_ok=True)
-        np.save('{}/{}.npy'.format(path, os.path.basename(filename)), features.numpy())
+        return torch.cat(output)
+
 
 if __name__ == '__main__':
-    get_features('../data_subset/videos', '../data_features')
+    res = get_features('../data_subset', batch_size=5)
+    print(res.size())
