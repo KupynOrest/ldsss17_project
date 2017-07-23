@@ -50,6 +50,11 @@ def get_movies(path='data_subset', sub_dir='images', shuffle=True):
 
     return movies
 
+def get_class_movies(class_name_path):
+    movies = glob.glob(class_name_path + '/' + '/**', recursive=True)
+    movies = [m for m in movies if m.endswith('.jpg')]
+    movies = [(get_label(title), list(frames)) for title, frames in itertools.groupby(movies, get_title)]
+    return movies
 
 def get_frames_median(path, sub_dir='images'):
     return np.median([len(frames) for _, frames in get_movies(path=path, sub_dir=sub_dir, shuffle=False)])
@@ -122,8 +127,38 @@ def get_features(in_dir, batch_size, max_frames=1000):
 
         yield labels, torch.cat(output)
 
+def get_class_features(in_dir):
+    model = prepare_model()
+    frames_median = 180
+    movies = get_class_movies(in_dir)
+
+    for label, frames in movies:
+        output = []
+        labels = []
+        title = get_title(frames[0]).split("/").pop()
+        logger.info('Loading movie with category %s name %s and %d frames', label, title, len(frames))
+
+        inputs = []
+        for frame in select_center(frames, frames_median):
+            img = Image.open(frame)
+            inputs.append(data_transforms(img).unsqueeze(0))
+
+        if not inputs:
+            continue
+
+        features = model(variable(torch.cat(inputs))).data
+
+        # left padding with zeros
+        if len(frames) < frames_median:
+            features = torch.cat([zeros(frames_median - len(frames)), features])
+
+        output.append(features.unsqueeze(0))
+        labels.append(label)
+
+        yield labels, torch.cat(output), title
+
 
 if __name__ == '__main__':
-    it = get_features('../data_subset', batch_size=2)
+    it = get_features('../data_subset', batch_size=1)
     labels, res = next(it)
     print(labels, res.size())

@@ -2,6 +2,10 @@
 data_subset
 data/UCF101
 data/data_subset
+data/train
+data/train_np
+data/test
+data/test_np
 conv/data_subset
 conv/hymenoptera_data/
 conv/.ipynb_checkpoints/
