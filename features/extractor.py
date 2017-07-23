@@ -139,8 +139,10 @@ def get_class_features(in_dir, frames_median=157):
         inputs = []
         frames_divider = 4
         frames_6fps = [frames[i] for i in range(len(frames)) if i % frames_divider == 0]
+        frames_limit = frames_median // frames_divider
+        frames = select_center(frames_6fps, frames_limit)
 
-        for frame in select_center(frames_6fps, frames_median // frames_divider):
+        for frame in frames:
             img = Image.open(frame)
             inputs.append(data_transforms(img).unsqueeze(0))
 
@@ -150,8 +152,8 @@ def get_class_features(in_dir, frames_median=157):
         features = model(variable(torch.cat(inputs))).data
 
         # left padding with zeros
-        if len(frames) < frames_median:
-            features = torch.cat([zeros(frames_median - len(frames)), features])
+        if len(frames) < frames_limit:
+            features = torch.cat([zeros(frames_limit - len(frames)), features])
 
         output.append(features.unsqueeze(0))
         labels.append(label)
