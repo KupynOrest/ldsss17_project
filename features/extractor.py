@@ -137,7 +137,9 @@ def get_class_features(in_dir, frames_median=157):
         logger.info('Loading movie with category %s name %s and %d frames', label, title, len(frames))
 
         inputs = []
-        for frame in select_center(frames, frames_median):
+        frames_6fps = [frames[i] for i in range(len(frames)) if i % 4 == 0]
+
+        for frame in select_center(frames_6fps, frames_median):
             img = Image.open(frame)
             inputs.append(data_transforms(img).unsqueeze(0))
 
