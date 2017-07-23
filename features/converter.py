@@ -12,11 +12,10 @@ for directory in ['../data/train']:  # '../data/test'
 
         if not os.path.exists(out_dir):
             os.makedirs(out_dir)
+            for i, (labels, images, title) in enumerate(get_class_features(in_dir=in_dir, frames_median=frames_median)):
+                np_data = images.cpu().numpy()
 
-        for i, (labels, images, title) in enumerate(get_class_features(in_dir=in_dir, frames_median=frames_median)):
-            np_data = images.cpu().numpy()
-
-            numpy.save(os.path.join(out_dir, title + '.npy'), np_data)
+                numpy.save(os.path.join(out_dir, title + '.npy'), np_data)
 
 
 
