@@ -1,6 +1,10 @@
 .ipynb_checkpoints/
 data_subset
+data/UCF101
+data/data_subset
 conv/data_subset
 conv/hymenoptera_data/
 conv/.ipynb_checkpoints/
 .idea/
+.DS_Store
+features/__pycache__/
