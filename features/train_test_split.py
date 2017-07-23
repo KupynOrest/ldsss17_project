@@ -15,7 +15,7 @@ def move_test_data(file_names, image_dir):
 
 
 def split_train_test():
-    test_source = 'conv/data_subset/ucfTrainTestlist'
+    test_source = 'data/UCF101/ucfTrainTestlist'
     image_dir = 'data/UCF101/images'
 
     with open(os.path.join(test_source, 'testlist01.txt')) as flist:
