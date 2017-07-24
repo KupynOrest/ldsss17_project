@@ -70,9 +70,9 @@ def store_features(in_dir, out_dir, frames_count=25):
         np.save(os.path.join(out_dir, label, title + '.npy'), features.numpy())
 
 
-def get_class_features(in_dir, frames_count=25):
+def get_class_features(in_dir, frames_count=25, sub_dir='images'):
     model = prepare_model()
-    movies = get_movies(in_dir)
+    movies = get_movies(in_dir, sub_dir)
 
     for label, frames in movies:
         title = os.path.basename(get_title(frames[0]))
@@ -80,6 +80,7 @@ def get_class_features(in_dir, frames_count=25):
 
         inputs = []
         frames = [frames[i] for i in range(0, len(frames), len(frames) // frames_count)]
+        frames = frames[0: frames_count]
 
         for frame in frames:
             img = Image.open(frame)
