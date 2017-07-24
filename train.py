@@ -70,18 +70,18 @@ def train_model(model, criterion, optimizer, lr_scheduler, loaders, **opts):
                 running_loss += loss.data[0]
                 running_corrects += torch.sum(preds == labels.data)
 
-                epoch_loss = running_loss / dset_sizes[phase]
-                epoch_acc = running_corrects / dset_sizes[phase]
-                            
-                print('running corrects: ', running_corrects)
-                print('{} Loss: {:.4f} Acc: {:.4f}'.format(phase, epoch_loss, epoch_acc))
-                                    
-                # deep copy the model
-                if phase == opts['test_np_dir'] and epoch_acc > best_acc:
-                    best_acc = epoch_acc
-                    best_model = copy.deepcopy(model)
-                    # saving weights
-                    torch.save(model, opts['data_np_dir'] + '/' + str(dt.time()) + "/model_" + str(epoch) + ".pt")
+            epoch_loss = running_loss / dset_sizes[phase]
+            epoch_acc = running_corrects / dset_sizes[phase]
+
+            print('running corrects: ', running_corrects)
+            print('{} Loss: {:.4f} Acc: {:.4f}'.format(phase, epoch_loss, epoch_acc))
+
+            # deep copy the model
+            if phase == opts['test_np_dir'] and epoch_acc > best_acc:
+                best_acc = epoch_acc
+                best_model = copy.deepcopy(model)
+                # saving weights
+                torch.save(model, opts['data_dir'] + "/model_" + str(dt.time()) + str(epoch) + ".pt")
 
     time_elapsed = time.time() - since
     print('Training complete in {:.0f}m {:.0f}s'.format(time_elapsed // 60, time_elapsed % 60))
