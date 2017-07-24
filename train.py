@@ -127,8 +127,7 @@ def run(model_cls=ConvLSTM, opts=None):
                                   opts['sequence_length'], opts['input_size'],
                                   opts['batch_size'])[0] for x in [opts['train_np_dir'], opts['test_np_dir']]}
 
-    model_lstm = train_model(model, criterion, optimizer, exp_lr_scheduler, dset_loaders,
-                             num_epochs=opts['num_epochs'], model_name='lstm', **opts)
+    model_lstm = train_model(model, criterion, optimizer, exp_lr_scheduler, dset_loaders, model_name='lstm', **opts)
 
     for data in get_loader(os.path.join(opts['data_np_dir'], opts['test_np_dir']), batch_size=3000)[0]:
         # get the inputs
