@@ -7,6 +7,7 @@ data/train_np
 data/train_np_old
 data/test
 data/test_np
+data/trained_weights
 data/test_np_old
 conv/data_subset
 conv/hymenoptera_data/
