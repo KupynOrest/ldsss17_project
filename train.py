@@ -35,10 +35,10 @@ def train_model(model, criterion, optimizer, lr_scheduler, loaders, **opts):
             
             running_loss = 0.0
             running_corrects = 0
-            dset_sizes = dict(
-                train_size=compute_dataset_size(path=os.path.join(opts['data_dir'], opts['train_np_dir'])),
-                test_size=compute_dataset_size(path=os.path.join(opts['data_dir'], opts['test_np_dir']))
-            )
+            dset_sizes = {
+                opts['train_np_dir']: compute_dataset_size(path=os.path.join(opts['data_dir'], opts['train_np_dir'])),
+                opts['test_np_dir']: compute_dataset_size(path=os.path.join(opts['data_dir'], opts['test_np_dir']))
+            }
 
             # Iterate over data.
             for data in loaders[phase]:
