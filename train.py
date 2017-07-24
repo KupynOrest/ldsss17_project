@@ -2,7 +2,7 @@ import models
 import util
 
 
-def train_model(model, criterion, optimizer, lr_scheduler, path, num_epochs=200, model_name='lstm'):
+def train_model(model, criterion, optimizer, lr_scheduler, path, num_epochs = 200, model_name='lstm'):
     since = time.time()
     
     best_model = model
@@ -109,7 +109,6 @@ print ("GPU is available: ", use_gpu)
 
 model = ConvLSTM(input_size = input_size, hidden_size = opt['hidden_size'],
                       num_layers = opt['num_layers'], num_classes = num_classes, dropout = opt['dropout']).cuda()
-rnn_batch
 
 # Loss and Optimizer
 criterion = nn.CrossEntropyLoss()
