@@ -9,7 +9,8 @@ data/test_np*
 data/trained_weights
 conv/data_subset
 conv/hymenoptera_data/
-conv/.ipynb_checkpoints/
 .idea/
 .DS_Store
 features/__pycache__/
+processing/videos/
+processing/images/
