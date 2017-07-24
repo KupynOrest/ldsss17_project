@@ -160,6 +160,34 @@ def get_class_features(in_dir, frames_median=120, frames_divider = 6):
         yield labels, torch.cat(output), title
 
 
+def get_class_features_for_batches(in_dir, filter_size=16, stride=8):
+    model = prepare_model()
+    movies = get_class_movies(in_dir)
+
+    for label, frames in movies:
+        title = get_title(frames[0]).split("/").pop()
+        logger.info('Loading movie with category %s name %s and %d frames', label, title, len(frames))
+
+        for i in range(0, len(frames), stride):
+            if i + 16 < len(frames):
+                output = []
+                inputs = []
+                title = get_title(frames[0]).split("/").pop() + '_' + str(i)
+
+                frames_subset = frames[i: i+filter_size]
+                for frame in frames_subset:
+                    img = Image.open(frame)
+                    inputs.append(data_transforms(img).unsqueeze(0))
+
+                if not inputs:
+                    continue
+
+                features = model(variable(torch.cat(inputs))).data
+                output.append(features.unsqueeze(0))
+
+                yield torch.cat(output), title
+
+
 if __name__ == '__main__':
     it = get_features('../data_subset', batch_size=1)
     labels, res = next(it)
