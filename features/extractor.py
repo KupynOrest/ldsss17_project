@@ -21,7 +21,8 @@ logger.addHandler(logging.StreamHandler())
 
 
 data_transforms = transforms.Compose([
-    transforms.Scale(224),
+    transforms.Scale(256),
+    transforms.CenterCrop(224),
     transforms.ToTensor(),
     transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
 ])
@@ -64,8 +65,7 @@ def variable(t: torch.FloatTensor):
 
 
 def store_features(in_dir, out_dir, frames_count=25):
-    for i, (features, label, title) in \
-            enumerate(get_class_features(in_dir=in_dir, frames_count=frames_count)):
+    for features, label, title in get_class_features(in_dir=in_dir, frames_count=frames_count):
         os.makedirs(os.path.join(out_dir, label), exist_ok=True)
         np.save(os.path.join(out_dir, label, title + '.npy'), features.numpy())
 
@@ -79,8 +79,7 @@ def get_class_features(in_dir, frames_count=25, sub_dir='images'):
         logger.info('Loading movie with category %s name %s and %d frames', label, title, len(frames))
 
         inputs = []
-        frames = [frames[i] for i in range(0, len(frames), len(frames) // frames_count)]
-        frames = frames[0: frames_count]
+        frames = [frames[i] for i in range(0, len(frames), len(frames) // frames_count)][:frames_count]
 
         for frame in frames:
             img = Image.open(frame)
