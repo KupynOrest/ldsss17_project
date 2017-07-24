@@ -6,6 +6,7 @@ import pickle
 import numpy as np
 import torch
 from torch import nn
+import torch.utils.data
 
 from torch.autograd import Variable
 from models import ConvLSTM
