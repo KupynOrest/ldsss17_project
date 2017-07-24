@@ -1,9 +1,13 @@
-from bnlstm import LSTM, LSTMCell, BNLSTMCell
+import torch
+from torch import nn
+from torch.autograd import Variable
+
+from bnlstm import LSTM, BNLSTMCell
 
 
 class ConvLSTM(nn.Module):
     def __init__(self, input_size, hidden_size, num_layers, num_classes, dropout):
-        super(RNN, self).__init__()
+        super(ConvLSTM, self).__init__()
         self.hidden_size = hidden_size
         self.num_layers = num_layers
         self.lstm = nn.LSTM(input_size, hidden_size, num_layers, batch_first=True, dropout=dropout)
@@ -23,7 +27,7 @@ class ConvLSTM(nn.Module):
 
 class ConvLSTMBatchNorm(nn.Module):
     def __init__(self, input_size, hidden_size, num_layers, num_classes, dropout):
-        super(RNN_batch, self).__init__()
+        super(ConvLSTMBatchNorm, self).__init__()
         self.hidden_size = hidden_size
         self.num_layers = num_layers
         self.lstm = LSTM(cell_class=BNLSTMCell, input_size=input_size, hidden_size=hidden_size, num_layers=num_layers, batch_first=True, dropout=dropout, max_length=input_size).cuda()
