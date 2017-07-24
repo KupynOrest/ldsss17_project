@@ -26,18 +26,16 @@ class ConvLSTMBatchNorm(nn.Module):
         super(RNN_batch, self).__init__()
         self.hidden_size = hidden_size
         self.num_layers = num_layers
-        self.lstm = LSTM(cell_class=BNLSTMCell, input_size=input_size, hidden_size=hidden_size, num_layers=num_layers, batch_first=True, dropout=0.5, max_length=512).cuda()
+        self.lstm = LSTM(cell_class=BNLSTMCell, input_size=input_size, hidden_size=hidden_size, num_layers=num_layers, batch_first=True, dropout=dropout, max_length=input_size).cuda()
         self.fc = nn.Linear(hidden_size, num_classes).cuda()
     
     def forward(self, x):
         # Set initial states
-        h0 = Variable(torch.zeros(#self.num_layers,
-                                  x.size(0), self.hidden_size).cuda())
-                                  c0 = Variable(torch.zeros(#self.num_layers,
-                                                            x.size(0), self.hidden_size).cuda())
-                                  #         print (self.lstm(x, (h0, c0)))
-                                  _, (out, _) = self.lstm(input_=x, hx=(h0, c0))
+        h0 = Variable(torch.zeros(x.size(0), self.hidden_size).cuda())
+        c0 = Variable(torch.zeros(x.size(0), self.hidden_size).cuda())
+        
+        _, (out, _) = self.lstm(input_=x, hx=(h0, c0))
                                   
-                                  # Decode hidden state of last time step
-                                  out = self.fc(out[0])  
-                                  return out
+        # Decode hidden state of last time step
+        out = self.fc(out[0])
+        return out
