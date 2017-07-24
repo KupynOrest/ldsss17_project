@@ -79,7 +79,7 @@ def get_class_features(in_dir, frames_count=25):
         logger.info('Loading movie with category %s name %s and %d frames', label, title, len(frames))
 
         inputs = []
-        frames = [frames[i] for i in range(0, len(frames), len(frames) // frames_count + 1)]
+        frames = [frames[i] for i in range(0, len(frames), len(frames) // frames_count)]
 
         for frame in frames:
             img = Image.open(frame)
@@ -94,7 +94,7 @@ def get_class_features(in_dir, frames_count=25):
 
 def get_class_features_for_batches(in_dir, filter_size=16, stride=8):
     model = prepare_model()
-    movies = get_class_movies(in_dir)
+    movies = get_movies(in_dir)
 
     for label, frames in movies:
         title = get_title(frames[0]).split("/").pop()
