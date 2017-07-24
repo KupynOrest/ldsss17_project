@@ -1,4 +1,7 @@
 import os
+import sys
+sys.path.append('../')
+from features.extractor import get_class_features
 
 
 def convert_to_images():
@@ -9,7 +12,7 @@ def convert_to_images():
         os.mkdir(images_folder)
 
     list_video = sorted(os.listdir(videos_folder))
-    images = []
+    videos_list = []
 
     for v in list_video:
         path_class_folder_v_video = os.path.join(videos_folder, v)
@@ -19,12 +22,17 @@ def convert_to_images():
         image_name = path_class_folder_im_video + "/im_%03d.jpg"
         os.system("ffmpeg -i " + path_class_folder_v_video +
                   " -f image2 " + image_name)
-        images.append(image_name)
-    return images
+        videos_list.append(path_class_folder_im_video)
+    return videos_list
+
 
 def run_process():
+    video_images_list = convert_to_images()
+    for path in video_images_list:
+        features = get_class_features(path, frames_count=50)
+        print(features.shape)
 
     return 1
 
 
-images = convert_to_images()
+run_process()

@@ -64,6 +64,13 @@ def variable(t: torch.FloatTensor):
 
 
 def store_features(in_dir, out_dir, frames_count=25):
+    for i, (features, label, title) in \
+            enumerate(get_class_features(in_dir=in_dir, frames_count=frames_count)):
+        os.makedirs(os.path.join(out_dir, label), exist_ok=True)
+        np.save(os.path.join(out_dir, label, title + '.npy'), features.numpy())
+
+
+def get_class_features(in_dir, frames_count=25):
     model = prepare_model()
     movies = get_movies(in_dir)
 
@@ -82,8 +89,7 @@ def store_features(in_dir, out_dir, frames_count=25):
             continue
 
         features = model(variable(torch.cat(inputs))).data
-        os.makedirs(os.path.join(out_dir, label), exist_ok=True)
-        np.save(os.path.join(out_dir, label, title + '.npy'), features.numpy())
+        yield features, label, title
 
 
 def get_class_features_for_batches(in_dir, filter_size=16, stride=8):
