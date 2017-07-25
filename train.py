@@ -28,7 +28,7 @@ def train_model(model, criterion, optimizer, lr_scheduler, loaders, **opts):
         # Each epoch has a training and validation phase
         for phase in [opts['train_np_dir'], opts['test_np_dir']]:
             if phase == opts['train_np_dir']:
-                optimizer = lr_scheduler(optimizer, epoch)
+                optimizer = lr_scheduler(optimizer, epoch, init_lr=opts['learning_rate'])
                 model.train(True)  # Set model to training mode
             else:
                 model.train(False)  # Set model to evaluate mode
