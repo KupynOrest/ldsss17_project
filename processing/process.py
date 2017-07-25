@@ -2,6 +2,20 @@ import os, sys
 lib_path = os.path.abspath(os.path.join('features'))
 sys.path.append(lib_path)
 from extractor import get_features_by_fps
+import torch
+import torch.nn as nn
+
+from torch.autograd import Variable
+
+opts = {
+    'hidden_size': 512,
+    'input_size': 512,
+    'num_layers': 1,
+    'dropout': 0.75,
+    'batch_size': 128,
+    'num_classes': 101,
+    'sequence_length': 50
+}
 
 def convert_to_images():
     videos_folder = 'processing/videos/'
@@ -28,14 +42,28 @@ def convert_to_images():
     return video_images_list
 
 
+def run_on_model(inputs):
+    use_gpu = torch.cuda.is_available()
+    model = torch.load('processing/models/lstm68_11.pt')
+    inputs_view = inputs.view(-1, opts.sequence_length, opts.input_size)
+    if use_gpu:
+        model = model.cuda()
+        inputs_view = inputs_view.cuda()
+    inputs = Variable(inputs_view)
+    outputs = model(inputs)
+    print(outputs)
+    _, preds = torch.max(outputs.data, 1)
+    print(_)
+    print(preds)
+
+
 def run_process():
     video_images_list = convert_to_images()
 
     for path in video_images_list:
-        for i, (features, label, title) in enumerate(get_features_by_fps(path, frames_median=210, fps=8)):
-            print(features, label, title)
-
-    return 1
+        for i, (features, label, title) in enumerate(get_features_by_fps(path, frames_median=200, fps=6)):
+            run_on_model(features)
+    return
 
 
 run_process()
