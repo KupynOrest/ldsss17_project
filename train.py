@@ -9,7 +9,7 @@ from torch import nn
 import torch.utils.data
 
 from torch.autograd import Variable
-from models import ConvLSTM
+from models import ConvLSTM, ConvLSTMBatchNorm
 
 from util import get_loader, exp_lr_scheduler, compute_dataset_size
 from sklearn.metrics import confusion_matrix
@@ -28,7 +28,7 @@ def train_model(model, criterion, optimizer, lr_scheduler, loaders, **opts):
         # Each epoch has a training and validation phase
         for phase in [opts['train_np_dir'], opts['test_np_dir']]:
             if phase == opts['train_np_dir']:
-                optimizer = lr_scheduler(optimizer, epoch, init_lr=opts['learning_rate'])
+                optimizer = lr_scheduler(optimizer, epoch, init_lr=opts['learning_rate'], lr_decay_epoch=opts['lr_decay_epoch'])
                 model.train(True)  # Set model to training mode
             else:
                 model.train(False)  # Set model to evaluate mode
@@ -90,13 +90,15 @@ def train_model(model, criterion, optimizer, lr_scheduler, loaders, **opts):
 
 
 default_opts = {
-    'hidden_size': 256,
+    'hidden_size': 512,
     'input_size': 512,
-    'num_layers': 2,
-    'dropout': 0.8,
-    'batch_size': 2,
+    'num_layers': 1,
+    'dropout': 0.75,
+    'batch_size': 128,
     'num_epochs': 200,
-    'learning_rate': 0.1,
+    'learning_rate': 0.0004,
+    'weight_decay' : 0.00005,
+    'lr_decay_epoch' : 5,
     'sequence_length': 50,
     'data_dir': 'data',
     'train_np_dir': 'train_np',
@@ -107,7 +109,7 @@ use_gpu = torch.cuda.is_available()
 print("GPU is available: ", use_gpu)
 
 
-def run(model_cls=ConvLSTM, opts=None):
+def run(model_cls=ConvLSTMBatchNorm, opts=None):
     opts = opts or {}
     for k, v in default_opts.items():
         opts.setdefault(k, v)
@@ -122,7 +124,7 @@ def run(model_cls=ConvLSTM, opts=None):
         model = model.cuda()
 
     criterion = nn.CrossEntropyLoss()
-    optimizer = torch.optim.Adam(model.parameters(), lr=opts['learning_rate'], weight_decay=0)
+    optimizer = torch.optim.Adam(model.parameters(), lr=opts['learning_rate'], weight_decay=opts['weight_decay'])
 
     dset_loaders = {x: get_loader(opts['data_dir'] + '/' + x, classes,
                                   opts['sequence_length'], opts['input_size'],
@@ -130,7 +132,7 @@ def run(model_cls=ConvLSTM, opts=None):
 
     model_lstm = train_model(model, criterion, optimizer, exp_lr_scheduler, dset_loaders, model_name='lstm', **opts)
 
-    for data in get_loader(os.path.join(opts['data_np_dir'], opts['test_np_dir']), batch_size=3000)[0]:
+    for data in get_loader(os.path.join(opts['data_np_dir'], opts['test_np_dir']), batch_size=opts['batch_size'])[0]:
         # get the inputs
 
         inputs, labels = data
