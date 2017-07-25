@@ -1,7 +1,7 @@
 import os, sys
 lib_path = os.path.abspath(os.path.join('features'))
 sys.path.append(lib_path)
-from extractor import get_class_features
+from extractor import get_features_by_fps
 
 def convert_to_images():
     videos_folder = 'processing/videos/'
@@ -32,7 +32,7 @@ def run_process():
     video_images_list = convert_to_images()
 
     for path in video_images_list:
-        for i, (features, label, title) in enumerate(get_class_features(path, frames_count=50, sub_dir="")):
+        for i, (features, label, title) in enumerate(get_features_by_fps(path, frames_median=210, fps=8)):
             print(features, label, title)
 
     return 1

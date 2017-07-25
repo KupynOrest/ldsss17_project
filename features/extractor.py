@@ -48,6 +48,13 @@ def get_movies(path='data_subset', sub_dir='images'):
     return movies
 
 
+def select_center(frames, median):
+    if median >= len(frames):
+        return frames
+    padding = int((len(frames) - median) // 2)
+    return frames[padding:padding + median]
+
+
 def prepare_model():
     model = torchvision.models.resnet18(pretrained=True)
     model.fc = DummyLayer()
@@ -62,6 +69,13 @@ def variable(t: torch.FloatTensor):
     if torch.cuda.is_available():
         return Variable(t.cuda())
     return Variable(t)
+
+
+def zeros(rows):
+    t = torch.zeros(rows, 512)
+    if torch.cuda.is_available():
+        return t.cuda()
+    return t
 
 
 def store_features(in_dir, out_dir, frames_count=25):
@@ -120,6 +134,36 @@ def get_class_features_for_batches(in_dir, filter_size=16, stride=8):
                 output.append(features.unsqueeze(0))
 
                 yield torch.cat(output), title
+
+
+def get_features_by_fps(in_dir, frames_median=210, fps=8):
+    model = prepare_model()
+    movies = get_movies(in_dir, '')
+
+    for label, frames in movies:
+        title = get_title(frames[0]).split("/").pop()
+        logger.info('Loading movie with category %s name %s and %d frames', label, title, len(frames))
+
+        inputs = []
+        frames_divider = 24 // fps
+        frames_sfps = [frames[i] for i in range(len(frames)) if i % frames_divider == 0]
+        frames_limit = frames_median // frames_divider
+        frames = select_center(frames_sfps, frames_limit)
+
+        for frame in frames:
+            img = Image.open(frame)
+            inputs.append(data_transforms(img).unsqueeze(0))
+
+        if not inputs:
+            continue
+
+        features = model(variable(torch.cat(inputs))).data
+
+        # left padding with zeros
+        if len(frames) < frames_limit:
+            features = torch.cat([zeros(frames_limit - len(frames)), features])
+
+        yield features, label, title
 
 
 if __name__ == '__main__':
