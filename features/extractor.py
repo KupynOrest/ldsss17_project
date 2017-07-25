@@ -79,7 +79,9 @@ def get_class_features(in_dir, frames_count=25, sub_dir='images'):
         logger.info('Loading movie with category %s name %s and %d frames', label, title, len(frames))
 
         inputs = []
-        frames = [frames[i] for i in range(0, len(frames), len(frames) // frames_count)][:frames_count]
+        step = len(frames) // frames_count if len(frames) > frames_count else 1
+        frames = [frames[i] for i in range(0, len(frames), step)][:frames_count]
+        frames.extend([frames[-1]] * (frames_count - len(frames)))
 
         for frame in frames:
             img = Image.open(frame)
