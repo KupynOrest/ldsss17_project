@@ -12,7 +12,7 @@ We've implemented ConvNet + LSTM model for action recognition like here
 
 ![alt text](https://raw.githubusercontent.com/lyubonko/ldsss17_project/master/images/architecture.png) 
 
-We use [ResNet-18](http://pytorch.org/docs/master/torchvision/models.html) pretrained model from torchvision as a feature extractor. The last fully connected layer for classification is removed and we use 512 featured for each frame taken from the activation of the last ResNet layer. The features for 16 frames are then fed to many-to-one [Batch-Norm LSTM](https://arxiv.org/pdf/1603.09025.pdf) which performs the final classification. 
+We use [ResNet-18](http://pytorch.org/docs/master/torchvision/models.html) pretrained on ImageNet model from torchvision as a feature extractor. The last fully connected layer for classification is removed and we use 512 featured for each frame taken from the activation of the last ResNet layer. The features for 16 frames are then fed to many-to-one [Batch-Norm LSTM](https://arxiv.org/pdf/1603.09025.pdf) which performs the final classification. 
 
 ## Dependencies
 
